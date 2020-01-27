@@ -9,6 +9,7 @@ import { SpotifyService } from "src/app/services/spotify.service";
 })
 export class ArtistaComponent implements OnInit {
   artista: any;
+  topTracks: any[] = [];
   loading = true;
   constructor(
     private route: ActivatedRoute,
@@ -17,10 +18,21 @@ export class ArtistaComponent implements OnInit {
 
   ngOnInit() {
     this.route.params.subscribe(params => {
-      this.spotifyService.getArtista(params["id"]).subscribe(artista => {
-        this.artista = artista;
-        this.loading = false;
-      });
+      this.getArtista(params["id"]);
+      this.getTopTracks(params["id"]);
     });
+  }
+
+  getArtista(id: string) {
+    this.spotifyService.getArtista(id).subscribe((artista: any) => {
+      this.artista = artista;
+      this.loading = false;
+    });
+  }
+
+  getTopTracks(id: string) {
+    this.spotifyService
+      .getTopTracks(id)
+      .subscribe((topTracks: any[]) => (this.topTracks = topTracks));
   }
 }
