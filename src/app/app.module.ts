@@ -12,6 +12,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { NoImagePipe } from './pipes/noimage.pipe';
 import { TarjetasComponent } from './components/tarjetas/tarjetas.component';
 import { LoadingComponent } from './components/shared/loading/loading.component';
+import { DomSeguroPipe } from './pipes/domseguro.pipe';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,8 @@ import { LoadingComponent } from './components/shared/loading/loading.component'
     NavbarComponent,
     NoImagePipe,
     TarjetasComponent,
-    LoadingComponent
+    LoadingComponent,
+    DomSeguroPipe
   ],
   imports: [
     BrowserModule,
