@@ -1,15 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from "@angular/core";
+import { SpotifyService } from "src/app/services/spotify.service";
 
 @Component({
-  selector: 'app-home',
-  templateUrl: './home.component.html',
+  selector: "app-home",
+  templateUrl: "./home.component.html",
   styles: []
 })
 export class HomeComponent implements OnInit {
-
-  constructor() { }
+  constructor(private spotifyService: SpotifyService) {}
 
   ngOnInit() {
+    this.spotifyService.getNewReleases().subscribe(console.log);
   }
-
 }
