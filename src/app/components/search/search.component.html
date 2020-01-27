@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row animated fadeIn">
   <div class="col">
     <input
       type="text"
@@ -9,5 +9,7 @@
     />
   </div>
 </div>
-
-<app-tarjetas [items]="artistas"></app-tarjetas>
+<div *ngIf="loading" class="mt-5">
+  <app-loading></app-loading>
+</div>
+<app-tarjetas *ngIf="!loading" [items]="artistas"></app-tarjetas>
