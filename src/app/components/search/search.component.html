@@ -14,7 +14,7 @@
   <div *ngFor="let artista of artistas" class="card">
     <img
       class="card-img-top"
-      [src]="artista.images[0].url"
+      [src]="artista.images | noimage"
       alt="Card image cap"
     />
     <div class="card-body">
