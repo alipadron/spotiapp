@@ -1,23 +1,60 @@
 import { Injectable } from "@angular/core";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
-import { Observable, pipe } from "rxjs";
-import { map } from "rxjs/operators";
+import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
+import { Observable, pipe, EMPTY } from "rxjs";
+import { map, catchError, tap, switchMap } from "rxjs/operators";
 
 @Injectable({
   providedIn: "root"
 })
 export class SpotifyService {
-  constructor(private http: HttpClient) {}
+  private clientId = "d6b55734aa3f4b49af89ae8023b6c69e";
+  private clientSecret = "4659ca881ead4eed81c45197f071db34";
+  private accessToken: string;
+
+  constructor(private http: HttpClient) {
+    this.accessToken = localStorage.getItem("access_token");
+  }
+
+  private getAccessToken() {
+    const body = new HttpParams()
+      .set("grant_type", "client_credentials")
+      .set("client_id", this.clientId)
+      .set("client_secret", this.clientSecret);
+    return this.http.post("https://accounts.spotify.com/api/token", body);
+  }
 
   getQuery(query: string) {
     const url = `https://api.spotify.com/v1/${query}`;
 
-    const headers = new HttpHeaders({
-      Authorization:
-        "Bearer BQAmyEceUB_Q3Mt-gtP_DTUjYgRN3-0FLwYgJv6i-M2HPhl2CqcRtjrfPBRImYy0n91Pi4m4pl6uydLXJmc"
-    });
-
-    return this.http.get(url, { headers });
+    if (this.accessToken) {
+      const headers = new HttpHeaders({
+        Authorization: `Bearer ${this.accessToken}`
+      });
+      return this.http.get(url, { headers }).pipe(
+        catchError(err => {
+          // Unauthorized means token has expired
+          if (err.status === 401) {
+            return this.getAccessToken().pipe(
+              switchMap((response: any) => {
+                this.accessToken = response.access_token;
+                localStorage.setItem("access_token", response.access_token);
+                return this.getQuery(query);
+              })
+            );
+          } else {
+            throw Error("Error desconocido");
+          }
+        })
+      );
+    } else {
+      return this.getAccessToken().pipe(
+        switchMap((response: any) => {
+          this.accessToken = response.access_token;
+          localStorage.setItem("access_token", response.access_token);
+          return this.getQuery(query);
+        })
+      );
+    }
   }
 
   getNewReleases() {
