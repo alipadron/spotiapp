@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
-import { Observable, pipe, EMPTY } from "rxjs";
-import { map, catchError, tap, switchMap } from "rxjs/operators";
+import { Observable, pipe, EMPTY, BehaviorSubject } from "rxjs";
+import { map, catchError, tap, switchMap, filter, take } from "rxjs/operators";
 
 @Injectable({
   providedIn: "root"
@@ -10,17 +10,34 @@ export class SpotifyService {
   private clientId = "d6b55734aa3f4b49af89ae8023b6c69e";
   private clientSecret = "4659ca881ead4eed81c45197f071db34";
   private accessToken: string;
+  private isGettingToken: boolean;
+  private tokenSubject = new BehaviorSubject<any>(null);
 
   constructor(private http: HttpClient) {
     this.accessToken = localStorage.getItem("access_token");
   }
 
   private getAccessToken() {
-    const body = new HttpParams()
-      .set("grant_type", "client_credentials")
-      .set("client_id", this.clientId)
-      .set("client_secret", this.clientSecret);
-    return this.http.post("https://accounts.spotify.com/api/token", body);
+    if (!this.isGettingToken) {
+      this.isGettingToken = true;
+      const body = new HttpParams()
+        .set("grant_type", "client_credentials")
+        .set("client_id", this.clientId)
+        .set("client_secret", this.clientSecret);
+      return this.http
+        .post("https://accounts.spotify.com/api/token", body)
+        .pipe(
+          tap((response: any) => {
+            this.isGettingToken = false;
+            this.tokenSubject.next(response);
+          })
+        );
+    } else {
+      return this.tokenSubject.pipe(
+        filter(token => token != null),
+        take(1)
+      );
+    }
   }
 
   getQuery(query: string) {
